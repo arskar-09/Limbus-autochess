@@ -165,7 +165,7 @@
             grid-template-columns: repeat(8, 1fr);
             gap: 3px;
             padding: 4px;
-            height: 62px;
+            height: 88px;
         }
 
         .slot {
@@ -188,7 +188,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 2px;
+            padding: 3px;
             position: relative;
             box-shadow: 0 1px 3px rgba(0,0,0,0.7);
             font-size: 8px;
@@ -204,7 +204,7 @@
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.05) 45%, rgba(0,0,0,0.85) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.85) 100%);
             z-index: 1;
         }
 
@@ -234,17 +234,17 @@
             justify-content: space-between;
             align-items: center;
             font-weight: bold;
-            font-size: 7.5px;
+            font-size: 8px;
             line-height: 1;
             text-shadow: 0 1px 3px #000;
         }
 
-        .unit-stars { color: var(--accent-gold); font-size: 7.5px; }
+        .unit-stars { color: var(--accent-gold); font-size: 8px; }
 
         .unit-body {
             text-align: center;
             font-weight: bold;
-            font-size: clamp(7.5px, 1.8vw, 9px);
+            font-size: clamp(8px, 1.8vw, 10px);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -254,7 +254,7 @@
         }
 
         .unit-sin-tag {
-            font-size: 7px;
+            font-size: 7.5px;
             color: #ffaa33;
             text-align: center;
             margin-bottom: 1px;
@@ -270,7 +270,7 @@
 
         .bar {
             width: 100%;
-            height: 2.5px;
+            height: 3px;
             background: #222;
             border-radius: 1px;
             overflow: hidden;
@@ -279,20 +279,21 @@
         .hp-fill { background: #4caf50; width: 100%; height: 100%; transition: width 0.2s; }
         .sin-fill { background: #ff9800; width: 0%; height: 100%; transition: width 0.2s; }
 
+        /* 하단 영역 및 버튼 사이즈 대폭 확대 */
         footer {
             background: #18181c;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             display: grid;
-            grid-template-columns: 130px 1fr;
-            gap: 4px;
+            grid-template-columns: 180px 1fr;
+            gap: 6px;
             padding: 4px;
         }
 
         .shop-controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 3px;
+            gap: 4px;
         }
 
         button {
@@ -300,12 +301,12 @@
             color: #fff;
             border: 1px solid var(--border-color);
             padding: 4px 2px;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
             transition: all 0.15s;
-            font-size: 9.5px;
-            min-height: 32px;
+            font-size: 12px;
+            min-height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -316,7 +317,7 @@
         button:disabled { opacity: 0.4; border-color: #333; }
 
         .btn-sell { background: #8a2525; border-color: #ff4d4d; }
-        .btn-battle { background: var(--accent-red); border-color: #ff4d4d; font-size: 10px; }
+        .btn-battle { background: var(--accent-red); border-color: #ff4d4d; font-size: 13px; font-weight: 800; }
 
         .shop-slots {
             display: grid;
@@ -324,12 +325,11 @@
             gap: 3px;
         }
 
-        /* 상점 카드 일러스트 가독성 최적화 */
         .shop-item {
             background: #222228;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            padding: 3px;
+            padding: 4px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -339,14 +339,14 @@
             position: relative;
             overflow: hidden;
             touch-action: manipulation;
-            min-height: 54px;
+            min-height: 80px;
         }
 
         .shop-item::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 45%, rgba(0,0,0,0.85) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.85) 100%);
             z-index: 1;
         }
 
@@ -474,8 +474,21 @@
                 grid-template-columns: repeat(4, 1fr); 
             }
 
+            button {
+                min-height: 44px;
+                font-size: 11px;
+            }
+
+            .btn-battle {
+                font-size: 12px;
+            }
+
             #bench { 
-                height: 50px; 
+                height: 70px; 
+            }
+
+            .shop-item {
+                min-height: 68px;
             }
 
             header {
@@ -1016,8 +1029,8 @@ function renderShop() {
                     <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.faction}</span>
                     <span class="gold-text">${item.cost}G</span>
                 </div>
-                <div style="font-size:7.5px; color:#ffaa33; font-weight:bold;">[${item.sinAttr}]</div>
-                <div style="text-align:center; font-weight:bold; font-size:8.5px; margin-top:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
+                <div style="font-size:8px; color:#ffaa33; font-weight:bold;">[${item.sinAttr}]</div>
+                <div style="text-align:center; font-weight:bold; font-size:9px; margin-top:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
             </div>`;
     });
     container.innerHTML = html;
