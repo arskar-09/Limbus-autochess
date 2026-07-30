@@ -204,7 +204,7 @@
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.9) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.05) 45%, rgba(0,0,0,0.85) 100%);
             z-index: 1;
         }
 
@@ -236,6 +236,7 @@
             font-weight: bold;
             font-size: 7.5px;
             line-height: 1;
+            text-shadow: 0 1px 3px #000;
         }
 
         .unit-stars { color: var(--accent-gold); font-size: 7.5px; }
@@ -257,7 +258,7 @@
             color: #ffaa33;
             text-align: center;
             margin-bottom: 1px;
-            text-shadow: 0 1px 2px #000;
+            text-shadow: 0 1px 3px #000;
         }
 
         .unit-bars {
@@ -323,6 +324,7 @@
             gap: 3px;
         }
 
+        /* 상점 카드 일러스트 가독성 최적화 */
         .shop-item {
             background: #222228;
             border: 1px solid var(--border-color);
@@ -337,19 +339,21 @@
             position: relative;
             overflow: hidden;
             touch-action: manipulation;
+            min-height: 54px;
         }
 
         .shop-item::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(20, 20, 25, 0.85);
+            background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 45%, rgba(0,0,0,0.85) 100%);
             z-index: 1;
         }
 
         .shop-item > * {
             position: relative;
             z-index: 2;
+            text-shadow: 0 1px 3px #000, 0 0 2px #000;
         }
 
         #clash-banner {
@@ -362,7 +366,6 @@
             background: rgba(15, 15, 20, 0.95);
             border: 1.5px solid var(--accent-gold);
             border-radius: 8px;
-            text-anchor: center;
             text-align: center;
             font-size: 11px;
             font-weight: bold;
@@ -420,7 +423,6 @@
 
         .selected-slot { border: 2px solid var(--accent-gold) !important; box-shadow: 0 0 8px var(--accent-gold); }
 
-        /* 모바일 최적화 미디어 쿼리 */
         @media (max-width: 680px) {
             main { 
                 grid-template-columns: 1fr; 
@@ -540,7 +542,6 @@
 </div>
 
 <script>
-// 🔊 오디오 리소스
 const SOUND_FILES = {
     coin: new Audio('limbus-company-coin.mp3'),
     egoStart: new Audio('EgoChange_Camera_Start.wav'),
@@ -1011,12 +1012,12 @@ function renderShop() {
         }
         html += `
             <div class="shop-item unit-cost-${item.cost}" style="background-image: url('${item.img}');" onclick="buyUnit(${idx})">
-                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:7.5px;">
-                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</span>
+                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:8px;">
+                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.faction}</span>
                     <span class="gold-text">${item.cost}G</span>
                 </div>
-                <div style="font-size:7px; color:#aaa; margin-top:1px;">${item.faction} | [${item.sinAttr}]</div>
-                <div style="text-align:center; font-weight:bold; font-size:8px; margin-top:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
+                <div style="font-size:7.5px; color:#ffaa33; font-weight:bold;">[${item.sinAttr}]</div>
+                <div style="text-align:center; font-weight:bold; font-size:8.5px; margin-top:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
             </div>`;
     });
     container.innerHTML = html;
