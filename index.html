@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>림버스 체스 (Limbus Chess) - Balanced & Custom Audio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>림버스 체스 (Limbus Chess) - Mobile Optimized</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -20,35 +20,36 @@
             padding: 0;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-touch-callout: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-            padding: 5px;
-            overflow: hidden;
-            touch-action: manipulation;
         }
 
         #game-container {
-            width: 100vw;
+            width: 100%;
             max-width: 1200px;
-            height: 98vh;
+            height: 100%;
+            height: 100dvh;
             max-height: 900px;
             background: var(--panel-bg);
-            border: 2px solid var(--accent-red);
-            border-radius: 8px;
+            border: 1px solid var(--accent-red);
             display: grid;
             grid-template-rows: auto 1fr auto;
-            gap: 6px;
-            padding: 8px;
+            gap: 4px;
+            padding: 6px;
             box-shadow: 0 0 20px rgba(139, 0, 0, 0.4);
             position: relative;
         }
@@ -57,33 +58,43 @@
             background: #151518;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             align-items: center;
-            padding: 6px;
+            text-align: center;
+            padding: 6px 4px;
             font-size: 11px;
             font-weight: bold;
-            gap: 4px;
+            gap: 2px;
         }
 
-        .stat-box { display: flex; align-items: center; gap: 4px; }
+        .stat-box { 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center;
+            gap: 1px;
+            font-size: 10px;
+            line-height: 1.1;
+        }
+        
         .gold-text { color: var(--accent-gold); }
         .hp-text { color: #ff4d4d; }
         .stage-text { color: #4da6ff; }
 
         main {
             display: grid;
-            grid-template-columns: 180px 1fr;
+            grid-template-columns: 160px 1fr;
             gap: 6px;
             min-height: 0;
+            overflow: hidden;
         }
 
         #side-panel {
             background: #18181c;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 6px;
+            padding: 5px;
             display: flex;
             flex-direction: column;
             gap: 6px;
@@ -92,21 +103,23 @@
         }
 
         .panel-section-title {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--accent-gold);
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 2px;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             font-weight: bold;
+            white-space: nowrap;
         }
 
         .synergy-item {
-            font-size: 10px;
+            font-size: 9.5px;
             margin-bottom: 3px;
-            padding: 4px;
+            padding: 3px 5px;
             border-radius: 4px;
             background: #222228;
             line-height: 1.2;
+            white-space: nowrap;
         }
 
         .synergy-active {
@@ -117,7 +130,7 @@
         #battle-area {
             display: grid;
             grid-template-rows: 1fr auto;
-            gap: 6px;
+            gap: 4px;
             position: relative;
             min-height: 0;
         }
@@ -128,8 +141,8 @@
             border-radius: 6px;
             display: grid;
             grid-template-rows: repeat(2, 1fr);
-            gap: 6px;
-            padding: 6px;
+            gap: 4px;
+            padding: 4px;
             position: relative;
             min-height: 0;
         }
@@ -137,12 +150,12 @@
         .board-zone {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 4px;
+            gap: 3px;
             position: relative;
         }
 
-        #enemy-zone { border-bottom: 1px dashed #444; padding-bottom: 4px; }
-        #player-zone { padding-top: 4px; }
+        #enemy-zone { border-bottom: 1px dashed #444; padding-bottom: 2px; }
+        #player-zone { padding-top: 2px; }
 
         #bench {
             background: #18181c;
@@ -150,9 +163,9 @@
             border-radius: 6px;
             display: grid;
             grid-template-columns: repeat(8, 1fr);
-            gap: 4px;
-            padding: 6px;
-            height: 70px;
+            gap: 3px;
+            padding: 4px;
+            height: 62px;
         }
 
         .slot {
@@ -163,7 +176,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            transition: all 0.2s;
+            transition: all 0.15s;
             overflow: hidden;
             touch-action: manipulation;
         }
@@ -171,14 +184,14 @@
         .unit-card {
             width: 100%;
             height: 100%;
-            border-radius: 4px;
+            border-radius: 3px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 3px;
+            padding: 2px;
             position: relative;
             box-shadow: 0 1px 3px rgba(0,0,0,0.7);
-            font-size: 9px;
+            font-size: 8px;
             background-size: cover;
             background-position: center top;
             background-repeat: no-repeat;
@@ -191,7 +204,7 @@
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.85) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.9) 100%);
             z-index: 1;
         }
 
@@ -206,40 +219,41 @@
         }
 
         .slot.clashing-slot .unit-card {
-            transform: scale(1.08);
+            transform: scale(1.05);
             border: 2px solid var(--accent-gold) !important;
-            box-shadow: 0 0 15px var(--accent-gold) !important;
+            box-shadow: 0 0 12px var(--accent-gold) !important;
             z-index: 99;
         }
 
-        .unit-cost-2 { border: 1.5px solid #555555; }
-        .unit-cost-3 { border: 1.5px solid #2b82c5; }
-        .unit-cost-4 { border: 1.5px solid #a233c5; }
+        .unit-cost-2 { border: 1px solid #666; }
+        .unit-cost-3 { border: 1px solid #2b82c5; }
+        .unit-cost-4 { border: 1px solid #a233c5; }
 
         .unit-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-weight: bold;
-            font-size: 8px;
+            font-size: 7.5px;
             line-height: 1;
         }
 
-        .unit-stars { color: var(--accent-gold); font-size: 8px; }
+        .unit-stars { color: var(--accent-gold); font-size: 7.5px; }
 
         .unit-body {
             text-align: center;
             font-weight: bold;
-            font-size: 9px;
+            font-size: clamp(7.5px, 1.8vw, 9px);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             text-shadow: 0 1px 3px #000;
             margin-top: auto;
+            line-height: 1.1;
         }
 
         .unit-sin-tag {
-            font-size: 8px;
+            font-size: 7px;
             color: #ffaa33;
             text-align: center;
             margin-bottom: 1px;
@@ -250,12 +264,12 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 1.5px;
+            gap: 1px;
         }
 
         .bar {
             width: 100%;
-            height: 3px;
+            height: 2.5px;
             background: #222;
             border-radius: 1px;
             overflow: hidden;
@@ -269,48 +283,51 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
             display: grid;
-            grid-template-columns: 140px 1fr;
-            gap: 6px;
-            padding: 6px;
+            grid-template-columns: 130px 1fr;
+            gap: 4px;
+            padding: 4px;
         }
 
         .shop-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
         }
 
         button {
             background: #2d2d35;
             color: #fff;
             border: 1px solid var(--border-color);
-            padding: 6px 4px;
+            padding: 4px 2px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            transition: all 0.2s;
-            font-size: 10px;
+            transition: all 0.15s;
+            font-size: 9.5px;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             touch-action: manipulation;
         }
 
-        button:active { transform: scale(0.97); }
+        button:active { transform: scale(0.95); opacity: 0.8; }
         button:disabled { opacity: 0.4; border-color: #333; }
 
-        .btn-sell { background: #a83232; border-color: #ff4d4d; }
-        .btn-battle { background: var(--accent-red); border-color: #ff4d4d; font-size: 11px; }
+        .btn-sell { background: #8a2525; border-color: #ff4d4d; }
+        .btn-battle { background: var(--accent-red); border-color: #ff4d4d; font-size: 10px; }
 
         .shop-slots {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
+            gap: 3px;
         }
 
         .shop-item {
             background: #222228;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            padding: 4px;
+            padding: 3px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -319,6 +336,7 @@
             background-position: center top;
             position: relative;
             overflow: hidden;
+            touch-action: manipulation;
         }
 
         .shop-item::before {
@@ -339,16 +357,17 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 90%;
-            padding: 10px;
+            width: 85%;
+            padding: 8px;
             background: rgba(15, 15, 20, 0.95);
-            border: 2px solid var(--accent-gold);
+            border: 1.5px solid var(--accent-gold);
             border-radius: 8px;
+            text-anchor: center;
             text-align: center;
             font-size: 11px;
             font-weight: bold;
             z-index: 9999;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.9);
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.2s ease-in-out;
@@ -357,31 +376,31 @@
         #clash-banner.active { opacity: 1; }
 
         .modal-overlay {
-            position: absolute;
+            position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.85);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 3000;
-            padding: 10px;
+            padding: 12px;
         }
 
         .ego-modal {
             background: #1e1e24;
             border: 2px solid var(--accent-gold);
             border-radius: 8px;
-            padding: 15px;
+            padding: 12px;
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
             text-align: center;
         }
 
-        .ego-modal h3 { color: var(--accent-gold); margin-bottom: 10px; font-size: 14px; }
+        .ego-modal h3 { color: var(--accent-gold); margin-bottom: 6px; font-size: 13px; }
 
         .ego-choices {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             justify-content: center;
             margin-top: 10px;
         }
@@ -391,31 +410,76 @@
             background: #25252b;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 8px;
+            padding: 6px 4px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
             align-items: center;
         }
 
         .selected-slot { border: 2px solid var(--accent-gold) !important; box-shadow: 0 0 8px var(--accent-gold); }
 
-        @media (max-width: 768px) {
-            main { grid-template-columns: 120px 1fr; }
-            footer { grid-template-columns: 110px 1fr; }
-            .unit-body { font-size: 8px; }
-            .unit-header { font-size: 7px; }
-            .unit-sin-tag { font-size: 7px; }
-        }
+        /* 모바일 최적화 미디어 쿼리 */
+        @media (max-width: 680px) {
+            main { 
+                grid-template-columns: 1fr; 
+                grid-template-rows: auto 1fr; 
+            }
 
-        @media (max-width: 580px) {
-            main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-            #side-panel { max-height: 80px; flex-direction: row; overflow-x: auto; overflow-y: hidden; }
-            #side-panel > div { min-width: 140px; }
-            footer { grid-template-columns: 1fr; grid-template-rows: auto auto; }
-            .shop-controls { display: grid; grid-template-columns: repeat(4, 1fr); }
-            #bench { height: 55px; }
+            #side-panel { 
+                max-height: 52px; 
+                flex-direction: row; 
+                overflow-x: auto; 
+                overflow-y: hidden;
+                align-items: center;
+                padding: 2px 4px;
+            }
+
+            #side-panel > div { 
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                min-width: max-content;
+                border-right: 1px solid var(--border-color);
+                padding-right: 6px;
+            }
+
+            .panel-section-title {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+                font-size: 9px;
+            }
+
+            #sin-resonance-list, #synergy-list, #equipped-ego-list {
+                display: flex;
+                gap: 3px;
+            }
+
+            .synergy-item {
+                margin-bottom: 0;
+                font-size: 8.5px;
+                padding: 2px 4px;
+            }
+
+            footer { 
+                grid-template-columns: 1fr; 
+                grid-template-rows: auto auto; 
+            }
+
+            .shop-controls { 
+                grid-template-columns: repeat(4, 1fr); 
+            }
+
+            #bench { 
+                height: 50px; 
+            }
+
+            header {
+                font-size: 9.5px;
+                padding: 4px 2px;
+            }
         }
     </style>
 </head>
@@ -423,24 +487,24 @@
 
 <div id="game-container">
     <header>
-        <div class="stat-box">스테이지: <span id="stage-num" class="stage-text">1</span></div>
-        <div class="stat-box">HP: <span id="player-hp" class="hp-text">100</span></div>
-        <div class="stat-box">골드: <span id="player-gold" class="gold-text">10G</span> (<span id="interest-text">이자 +1G</span>)</div>
-        <div class="stat-box">배치: <span id="deploy-count">0/2</span></div>
+        <div class="stat-box"><span>스테이지</span><span id="stage-num" class="stage-text">1</span></div>
+        <div class="stat-box"><span>HP</span><span id="player-hp" class="hp-text">100</span></div>
+        <div class="stat-box"><span>골드</span><div><span id="player-gold" class="gold-text">10G</span></div></div>
+        <div class="stat-box"><span>배치</span><span id="deploy-count">0/2</span></div>
     </header>
 
     <main>
         <div id="side-panel">
             <div>
-                <div class="panel-section-title">⚡ 죄악 공명</div>
+                <div class="panel-section-title">⚡ 공명</div>
                 <div id="sin-resonance-list"></div>
             </div>
             <div>
-                <div class="panel-section-title">🏛️ 소속 시너지</div>
+                <div class="panel-section-title">🏛️ 소속</div>
                 <div id="synergy-list"></div>
             </div>
             <div>
-                <div class="panel-section-title">🎁 E.G.O 기프트 (<span id="ego-count">0/3</span>)</div>
+                <div class="panel-section-title">🎁 E.G.O (<span id="ego-count">0/3</span>)</div>
                 <div id="equipped-ego-list"></div>
             </div>
         </div>
@@ -457,10 +521,10 @@
 
     <footer>
         <div class="shop-controls">
-            <button id="btn-reroll" onclick="manualReroll()">리롤 (2G)</button>
-            <button id="btn-auto-reroll" onclick="toggleAutoReroll()">자동: OFF</button>
-            <button id="btn-sell" class="btn-sell" onclick="sellSelectedUnit()" disabled>판매 (-)</button>
-            <button id="btn-start-battle" class="btn-battle" onclick="startBattle()">전투 시작</button>
+            <button id="btn-reroll" onclick="manualReroll()">리롤(2G)</button>
+            <button id="btn-auto-reroll" onclick="toggleAutoReroll()">자동:OFF</button>
+            <button id="btn-sell" class="btn-sell" onclick="sellSelectedUnit()" disabled>판매(-)</button>
+            <button id="btn-start-battle" class="btn-battle" onclick="startBattle()">전투시작</button>
         </div>
 
         <div id="shop-slots" class="shop-slots"></div>
@@ -469,14 +533,14 @@
     <div id="ego-modal-overlay" class="modal-overlay" style="display: none;">
         <div class="ego-modal">
             <h3>🎁 E.G.O 기프트 선택</h3>
-            <p style="font-size: 11px; color: #aaa;">원하는 기프트 1개를 선택하세요.</p>
+            <p style="font-size: 10px; color: #aaa;">원하는 기프트 1개를 선택하세요.</p>
             <div id="ego-choices" class="ego-choices"></div>
         </div>
     </div>
 </div>
 
 <script>
-// 🔊 커스텀 오디오 리소스
+// 🔊 오디오 리소스
 const SOUND_FILES = {
     coin: new Audio('limbus-company-coin.mp3'),
     egoStart: new Audio('EgoChange_Camera_Start.wav'),
@@ -520,8 +584,7 @@ function initAudio() {
     audioInitialized = true;
 }
 
-// 최초 1회 터치/클릭 이벤트로 오디오 초기화
-['pointerdown', 'keydown'].forEach(evt => {
+['pointerdown', 'touchstart', 'keydown'].forEach(evt => {
     window.addEventListener(evt, initAudio, { once: true });
 });
 
@@ -564,14 +627,14 @@ const UNIT_DB = [
     { id: 'lcb_outis', name: 'LCB 오티스', cost: 2, faction: 'LCB', hp: 270, atk: 20, maxSin: 75, sinAttr: '오만', egoName: '투귀', egoDmg: 55, img: IMG_OUTIS },
     { id: 'lcb_gregor', name: 'LCB 그레고르', cost: 2, faction: 'LCB', hp: 320, atk: 16, maxSin: 70, sinAttr: '나태', egoName: '어느 날 갑자기', egoDmg: 50, img: IMG_GREGOR },
 
-    { id: 'n_heathcliff', name: 'N사 작은 망치 히스클리프', cost: 3, faction: 'N사', hp: 350, atk: 24, maxSin: 80, sinAttr: '분노', egoName: '시체자루', egoDmg: 75, img: IMG_N_HEATH },
-    { id: 'n_donquixote', name: 'N사 중간 망치 돈키호테', cost: 3, faction: 'N사', hp: 340, atk: 25, maxSin: 80, sinAttr: '색욕', egoName: '평생스튜', egoDmg: 80, img: IMG_N_DON },
-    { id: 'w_faust', name: 'W사 2등급 정리 요원 파우스트', cost: 3, faction: 'W사', hp: 330, atk: 26, maxSin: 85, sinAttr: '우울', egoName: '표상방출기', egoDmg: 85, img: IMG_W_FAUST },
-    { id: 'blade_outis', name: '검계 살수 오티스', cost: 3, faction: '검계', hp: 310, atk: 28, maxSin: 75, sinAttr: '오만', egoName: '토사구팽', egoDmg: 90, img: IMG_BLADE_OUTIS },
+    { id: 'n_heathcliff', name: 'N사 히스클리프', cost: 3, faction: 'N사', hp: 350, atk: 24, maxSin: 80, sinAttr: '분노', egoName: '시체자루', egoDmg: 75, img: IMG_N_HEATH },
+    { id: 'n_donquixote', name: 'N사 돈키호테', cost: 3, faction: 'N사', hp: 340, atk: 25, maxSin: 80, sinAttr: '색욕', egoName: '평생스튜', egoDmg: 80, img: IMG_N_DON },
+    { id: 'w_faust', name: 'W사 파우스트', cost: 3, faction: 'W사', hp: 330, atk: 26, maxSin: 85, sinAttr: '우울', egoName: '표상방출기', egoDmg: 85, img: IMG_W_FAUST },
+    { id: 'blade_outis', name: '검계 오티스', cost: 3, faction: '검계', hp: 310, atk: 28, maxSin: 75, sinAttr: '오만', egoName: '토사구팽', egoDmg: 90, img: IMG_BLADE_OUTIS },
 
-    { id: 'n_meursault', name: 'N사 큰 망치 뫼르소', cost: 4, faction: 'N사', hp: 440, atk: 28, maxSin: 95, sinAttr: '나태', egoName: '타인의 사슬', egoDmg: 100, img: IMG_N_MEUR },
-    { id: 'w_donquixote', name: 'W사 3등급 정리 요원 돈키호테', cost: 4, faction: 'W사', hp: 380, atk: 32, maxSin: 80, sinAttr: '우울', egoName: '라 샹그레', egoDmg: 110, img: IMG_W_DON },
-    { id: 'w_ryoshu', name: 'W사 3등급 정리 요원 료슈', cost: 4, faction: 'W사', hp: 350, atk: 35, maxSin: 85, sinAttr: '오만', egoName: '차원절단기', egoDmg: 115, img: IMG_W_RYO }
+    { id: 'n_meursault', name: 'N사 뫼르소', cost: 4, faction: 'N사', hp: 440, atk: 28, maxSin: 95, sinAttr: '나태', egoName: '타인의 사슬', egoDmg: 100, img: IMG_N_MEUR },
+    { id: 'w_donquixote', name: 'W사 돈키호테', cost: 4, faction: 'W사', hp: 380, atk: 32, maxSin: 80, sinAttr: '우울', egoName: '라 샹그레', egoDmg: 110, img: IMG_W_DON },
+    { id: 'w_ryoshu', name: 'W사 료슈', cost: 4, faction: 'W사', hp: 350, atk: 35, maxSin: 85, sinAttr: '오만', egoName: '차원절단기', egoDmg: 115, img: IMG_W_RYO }
 ];
 
 const BOSS_ABNORMALITIES = [
@@ -634,7 +697,7 @@ function initGrid() {
 }
 
 function createSlotHTML(type, index) {
-    return `<div class="slot" id="${type}-slot-${index}" onclick="handleSlotClick('${type}', ${index})"></div>`;
+    return `<div class="slot" id="${type === 'board' ? 'board' : 'bench'}-slot-${index}" onclick="handleSlotClick('${type}', ${index})"></div>`;
 }
 
 function getShopOdds(stage) {
@@ -680,11 +743,11 @@ function toggleAutoReroll() {
     state.autoReroll = !state.autoReroll;
     const btn = document.getElementById('btn-auto-reroll');
     if (state.autoReroll) {
-        btn.innerText = "자동: ON";
+        btn.innerText = "자동:ON";
         btn.style.borderColor = "#ff9800";
         runAutoReroll();
     } else {
-        btn.innerText = "자동: OFF";
+        btn.innerText = "자동:OFF";
         btn.style.borderColor = "var(--border-color)";
         if (state.autoRerollTimer) {
             clearInterval(state.autoRerollTimer);
@@ -892,9 +955,9 @@ function sellSelectedUnit() {
 
 function highlightSlot(type, index, on) {
     const parentId = type === 'bench' ? 'bench' : 'player-zone';
-    const slots = document.getElementById(parentId).children;
-    if (slots[index]) {
-        slots[index].classList.toggle('selected-slot', on);
+    const container = document.getElementById(parentId);
+    if (container && container.children[index]) {
+        container.children[index].classList.toggle('selected-slot', on);
     }
 }
 
@@ -948,12 +1011,12 @@ function renderShop() {
         }
         html += `
             <div class="shop-item unit-cost-${item.cost}" style="background-image: url('${item.img}');" onclick="buyUnit(${idx})">
-                <div style="display:flex; justify-content:space-between; font-weight:bold;">
-                    <span>${item.name}</span>
+                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:7.5px;">
+                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</span>
                     <span class="gold-text">${item.cost}G</span>
                 </div>
-                <div style="font-size:8px; color:#aaa; margin-top:1px;">${item.faction} | [${item.sinAttr}]</div>
-                <div style="text-align:center; font-weight:bold; font-size:9px; margin-top:auto;">${item.name}</div>
+                <div style="font-size:7px; color:#aaa; margin-top:1px;">${item.faction} | [${item.sinAttr}]</div>
+                <div style="text-align:center; font-weight:bold; font-size:8px; margin-top:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
             </div>`;
     });
     container.innerHTML = html;
@@ -974,7 +1037,7 @@ function updateSynergiesAndSin() {
     for (let f in factions) {
         const count = factions[f];
         const isActive = count >= 2;
-        synHtml += `<div class="synergy-item ${isActive ? 'synergy-active' : ''}">${f}: ${count} ${isActive ? '✓' : ''}</div>`;
+        synHtml += `<div class="synergy-item ${isActive ? 'synergy-active' : ''}">${f}:${count}${isActive ? '✓' : ''}</div>`;
     }
     synList.innerHTML = synHtml || `<div class="synergy-item">없음</div>`;
 
@@ -983,7 +1046,7 @@ function updateSynergiesAndSin() {
     for (let s in sins) {
         const count = sins[s];
         const isActive = count >= 3;
-        sinHtml += `<div class="synergy-item ${isActive ? 'synergy-active' : ''}">[${s}]: ${count}/3 ${isActive ? '✓' : ''}</div>`;
+        sinHtml += `<div class="synergy-item ${isActive ? 'synergy-active' : ''}">[${s}]:${count}/3${isActive ? '✓' : ''}</div>`;
     }
     sinList.innerHTML = sinHtml || `<div class="synergy-item">없음</div>`;
 }
@@ -991,10 +1054,9 @@ function updateSynergiesAndSin() {
 function updateUI() {
     document.getElementById('stage-num').innerText = state.stage;
     document.getElementById('player-hp').innerText = state.playerHp;
-    document.getElementById('player-gold').innerText = `${state.gold}G`;
 
     const interest = Math.min(5, Math.floor(state.gold / 10));
-    document.getElementById('interest-text').innerText = `이자 +${interest}G`;
+    document.getElementById('player-gold').innerText = `${state.gold}G (+${interest}G)`;
 
     const deployed = state.playerBoard.filter(u => u !== null).length;
     const maxDeploy = Math.min(6, state.stage + 1);
@@ -1008,14 +1070,14 @@ function updateUI() {
         if (u) {
             const refundGold = u.cost * Math.pow(2, u.sync - 1);
             btnSell.disabled = false;
-            btnSell.innerText = `판매 (+${refundGold}G)`;
+            btnSell.innerText = `판매(+${refundGold}G)`;
         } else {
             btnSell.disabled = true;
-            btnSell.innerText = `판매 (-)`;
+            btnSell.innerText = `판매(-)`;
         }
     } else {
         btnSell.disabled = true;
-        btnSell.innerText = `판매 (-)`;
+        btnSell.innerText = `판매(-)`;
     }
 }
 
@@ -1321,9 +1383,9 @@ function showEgoModal() {
     choices.forEach(ego => {
         html += `
             <div class="ego-choice-card" onclick="selectEgo('${ego.id}')">
-                <div style="font-size:24px;">${ego.icon}</div>
-                <div style="color:var(--accent-gold); font-weight:bold; font-size:12px;">${ego.name}</div>
-                <div style="font-size:10px; text-align:center;">${ego.desc}</div>
+                <div style="font-size:20px;">${ego.icon}</div>
+                <div style="color:var(--accent-gold); font-weight:bold; font-size:11px;">${ego.name}</div>
+                <div style="font-size:9px; text-align:center;">${ego.desc}</div>
             </div>
         `;
     });
