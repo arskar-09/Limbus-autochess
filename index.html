@@ -184,6 +184,7 @@
             background-repeat: no-repeat;
             overflow: hidden;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
+            will-change: transform, box-shadow;
         }
 
         .unit-card::before {
@@ -204,7 +205,6 @@
             box-shadow: 0 0 10px rgba(255, 0, 0, 0.9);
         }
 
-        /* ⚔️ 순차 합 진행 슬롯 강조 하이라이트 */
         .slot.clashing-slot .unit-card {
             transform: scale(1.08);
             border: 2px solid var(--accent-gold) !important;
@@ -419,7 +419,7 @@
         }
     </style>
 </head>
-<body onclick="initAudio()">
+<body>
 
 <div id="game-container">
     <header>
@@ -478,12 +478,14 @@
 <script>
 // 🔊 커스텀 오디오 리소스
 const SOUND_FILES = {
-    coin: new Audio('limbus-company-coin.mp3'),         // 코인 토스 음원
-    egoStart: new Audio('EgoChange_Camera_Start.wav'), // E.G.O 시작음
-    egoCrash: new Audio('EgoChange_Camera_Crash.wav'), // E.G.O 충격/피격음
-    hit: new Audio('hit.mp3'),                           // 일반 타격음
-    clash: new Audio('clash.mp3')                        // 합 무승부 (챙-강!)
+    coin: new Audio('limbus-company-coin.mp3'),
+    egoStart: new Audio('EgoChange_Camera_Start.wav'),
+    egoCrash: new Audio('EgoChange_Camera_Crash.wav'),
+    hit: new Audio('hit.mp3'),
+    clash: new Audio('clash.mp3')
 };
+
+let audioInitialized = false;
 
 function playAudioFile(key, volume = 0.7) {
     const original = SOUND_FILES[key];
@@ -494,7 +496,6 @@ function playAudioFile(key, volume = 0.7) {
     }
 }
 
-// 💥 E.G.O 순차 재생 (Start 종료 후 Crash 연결)
 function playEgoSequenceSound() {
     const startAudio = SOUND_FILES.egoStart ? SOUND_FILES.egoStart.cloneNode() : new Audio('EgoChange_Camera_Start.wav');
     const crashAudio = SOUND_FILES.egoCrash ? SOUND_FILES.egoCrash.cloneNode() : new Audio('EgoChange_Camera_Crash.wav');
@@ -512,10 +513,17 @@ function playEgoSequenceSound() {
 }
 
 function initAudio() {
+    if (audioInitialized) return;
     for (let key in SOUND_FILES) {
         if (SOUND_FILES[key]) SOUND_FILES[key].load();
     }
+    audioInitialized = true;
 }
+
+// 최초 1회 터치/클릭 이벤트로 오디오 초기화
+['pointerdown', 'keydown'].forEach(evt => {
+    window.addEventListener(evt, initAudio, { once: true });
+});
 
 const createDynamicAvatar = (bg, symbol, border) => {
     return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><rect width='160' height='160' fill='${encodeURIComponent(bg)}'/><circle cx='80' cy='75' r='45' fill='rgba(0,0,0,0.35)' stroke='${encodeURIComponent(border)}' stroke-width='3'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' fill='${encodeURIComponent(border)}' font-size='42' font-weight='bold'>${symbol}</text></svg>`;
@@ -597,7 +605,7 @@ let state = {
     selectedSlot: null
 };
 
-const SYNC_MULT = { 1: 1.0, 2: 1.3, 3: 1.6, 4: 2.0 }; // 동기화 능력치 배율 강화
+const SYNC_MULT = { 1: 1.0, 2: 1.3, 3: 1.6, 4: 2.0 };
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 window.onload = () => {
@@ -611,15 +619,18 @@ function initGrid() {
     const eZone = document.getElementById('enemy-zone');
     const bench = document.getElementById('bench');
 
-    pZone.innerHTML = ''; eZone.innerHTML = ''; bench.innerHTML = '';
+    let pHTML = '', eHTML = '', bHTML = '';
+    for (let i = 0; i < 6; i++) {
+        pHTML += createSlotHTML('board', i);
+        eHTML += `<div class="slot" id="enemy-slot-${i}"></div>`;
+    }
+    for (let i = 0; i < 8; i++) {
+        bHTML += createSlotHTML('bench', i);
+    }
 
-    for(let i = 0; i < 6; i++) {
-        pZone.innerHTML += createSlotHTML('board', i);
-        eZone.innerHTML += `<div class="slot" id="enemy-slot-${i}"></div>`;
-    }
-    for(let i = 0; i < 8; i++) {
-        bench.innerHTML += createSlotHTML('bench', i);
-    }
+    pZone.innerHTML = pHTML;
+    eZone.innerHTML = eHTML;
+    bench.innerHTML = bHTML;
 }
 
 function createSlotHTML(type, index) {
@@ -647,7 +658,7 @@ function getRandomCost(stage) {
 function generateShopItem() {
     const cost = getRandomCost(state.stage);
     const candidates = UNIT_DB.filter(u => u.cost === cost);
-    if(candidates.length === 0) return null;
+    if (candidates.length === 0) return null;
     const base = candidates[Math.floor(Math.random() * candidates.length)];
     return createUnitInstance(base.id, 1);
 }
@@ -658,7 +669,6 @@ function refreshShop() {
 }
 
 function manualReroll() {
-    initAudio();
     if (state.gold >= 2 && !state.isBattle) {
         state.gold -= 2;
         refreshShop();
@@ -667,7 +677,6 @@ function manualReroll() {
 }
 
 function toggleAutoReroll() {
-    initAudio();
     state.autoReroll = !state.autoReroll;
     const btn = document.getElementById('btn-auto-reroll');
     if (state.autoReroll) {
@@ -677,16 +686,18 @@ function toggleAutoReroll() {
     } else {
         btn.innerText = "자동: OFF";
         btn.style.borderColor = "var(--border-color)";
-        clearInterval(state.autoRerollTimer);
+        if (state.autoRerollTimer) {
+            clearInterval(state.autoRerollTimer);
+            state.autoRerollTimer = null;
+        }
     }
 }
 
 function runAutoReroll() {
-    clearInterval(state.autoRerollTimer);
+    if (state.autoRerollTimer) clearInterval(state.autoRerollTimer);
     state.autoRerollTimer = setInterval(() => {
         if (!state.autoReroll || state.isBattle) {
             if (state.autoReroll) toggleAutoReroll();
-            clearInterval(state.autoRerollTimer);
             return;
         }
 
@@ -713,14 +724,16 @@ function runAutoReroll() {
 
 function countUnitsInPossession(id, sync) {
     let count = 0;
-    [...state.bench, ...state.playerBoard].forEach(u => {
-        if (u && u.id === id && u.sync === sync) count++;
-    });
+    for (let i = 0; i < state.bench.length; i++) {
+        if (state.bench[i] && state.bench[i].id === id && state.bench[i].sync === sync) count++;
+    }
+    for (let i = 0; i < state.playerBoard.length; i++) {
+        if (state.playerBoard[i] && state.playerBoard[i].id === id && state.playerBoard[i].sync === sync) count++;
+    }
     return count;
 }
 
 function buyUnit(index) {
-    initAudio();
     if (state.isBattle) return;
     const item = state.shop[index];
     if (!item || state.gold < item.cost) return;
@@ -794,7 +807,6 @@ function createUnitInstance(id, sync) {
 }
 
 function handleSlotClick(type, index) {
-    initAudio();
     if (state.isBattle) return;
 
     if (!state.selectedSlot) {
@@ -858,7 +870,6 @@ function handleSlotClick(type, index) {
 }
 
 function sellSelectedUnit() {
-    initAudio();
     if (!state.selectedSlot || state.isBattle) return;
 
     const { type, index } = state.selectedSlot;
@@ -883,19 +894,18 @@ function highlightSlot(type, index, on) {
     const parentId = type === 'bench' ? 'bench' : 'player-zone';
     const slots = document.getElementById(parentId).children;
     if (slots[index]) {
-        if (on) slots[index].classList.add('selected-slot');
-        else slots[index].classList.remove('selected-slot');
+        slots[index].classList.toggle('selected-slot', on);
     }
 }
 
 function updateBoard() {
-    renderGrid('player-zone', state.playerBoard, 'board');
-    renderGrid('bench', state.bench, 'bench');
-    renderGrid('enemy-zone', state.enemyBoard, 'enemy');
+    renderGrid('player-zone', state.playerBoard);
+    renderGrid('bench', state.bench);
+    renderGrid('enemy-zone', state.enemyBoard);
     updateSynergiesAndSin();
 }
 
-function renderGrid(elementId, array, type) {
+function renderGrid(elementId, array) {
     const container = document.getElementById(elementId);
     if (!container) return;
     const slots = container.children;
@@ -930,13 +940,13 @@ function renderGrid(elementId, array, type) {
 
 function renderShop() {
     const container = document.getElementById('shop-slots');
-    container.innerHTML = '';
+    let html = '';
     state.shop.forEach((item, idx) => {
         if (!item) {
-            container.innerHTML += `<div class="shop-item" style="justify-content:center; align-items:center; opacity:0.4;"><span>구매함</span></div>`;
+            html += `<div class="shop-item" style="justify-content:center; align-items:center; opacity:0.4;"><span>구매함</span></div>`;
             return;
         }
-        container.innerHTML += `
+        html += `
             <div class="shop-item unit-cost-${item.cost}" style="background-image: url('${item.img}');" onclick="buyUnit(${idx})">
                 <div style="display:flex; justify-content:space-between; font-weight:bold;">
                     <span>${item.name}</span>
@@ -946,6 +956,7 @@ function renderShop() {
                 <div style="text-align:center; font-weight:bold; font-size:9px; margin-top:auto;">${item.name}</div>
             </div>`;
     });
+    container.innerHTML = html;
 }
 
 function updateSynergiesAndSin() {
@@ -959,22 +970,22 @@ function updateSynergiesAndSin() {
     });
 
     const synList = document.getElementById('synergy-list');
-    synList.innerHTML = '';
+    let synHtml = '';
     for (let f in factions) {
         const count = factions[f];
-        let isActive = count >= 2;
-        synList.innerHTML += `<div class="synergy-item ${isActive ? 'synergy-active' : ''}">${f}: ${count} ${isActive ? '✓' : ''}</div>`;
+        const isActive = count >= 2;
+        synHtml += `<div class="synergy-item ${isActive ? 'synergy-active' : ''}">${f}: ${count} ${isActive ? '✓' : ''}</div>`;
     }
-    if (Object.keys(factions).length === 0) synList.innerHTML = `<div class="synergy-item">없음</div>`;
+    synList.innerHTML = synHtml || `<div class="synergy-item">없음</div>`;
 
     const sinList = document.getElementById('sin-resonance-list');
-    sinList.innerHTML = '';
+    let sinHtml = '';
     for (let s in sins) {
         const count = sins[s];
-        let isActive = count >= 3;
-        sinList.innerHTML += `<div class="synergy-item ${isActive ? 'synergy-active' : ''}">[${s}]: ${count}/3 ${isActive ? '✓' : ''}</div>`;
+        const isActive = count >= 3;
+        sinHtml += `<div class="synergy-item ${isActive ? 'synergy-active' : ''}">[${s}]: ${count}/3 ${isActive ? '✓' : ''}</div>`;
     }
-    if (Object.keys(sins).length === 0) sinList.innerHTML = `<div class="synergy-item">없음</div>`;
+    sinList.innerHTML = sinHtml || `<div class="synergy-item">없음</div>`;
 }
 
 function updateUI() {
@@ -1015,14 +1026,13 @@ function showGlobalEffect(msg) {
     setTimeout(() => banner.classList.remove('active'), 1200);
 }
 
-// 🎯 스테이지별 적 스폰 제한 및 2스테이지 난이도 완화
 function generateEnemies() {
     state.enemyBoard.fill(null);
     const enemyCount = Math.min(6, Math.max(1, Math.floor(state.stage / 2) + 1));
     const isBossStage = state.stage % 5 === 0;
 
-    let maxCostAllowed = 2; // 스폰 제한 성급
-    let enemySync = 1;      // 적 동기화 레벨
+    let maxCostAllowed = 2;
+    let enemySync = 1;
 
     if (state.stage >= 6) {
         maxCostAllowed = 4;
@@ -1031,7 +1041,6 @@ function generateEnemies() {
         maxCostAllowed = 3;
         enemySync = 2;
     } else {
-        // 1~2스테이지: 2성/3성 위주, 2동기화 수준으로 완화 (4성 등장 차단)
         maxCostAllowed = 3;
         enemySync = 2; 
     }
@@ -1040,8 +1049,8 @@ function generateEnemies() {
 
     if (isBossStage) {
         const bossInfo = BOSS_ABNORMALITIES[(Math.floor(state.stage / 5) - 1) % BOSS_ABNORMALITIES.length];
-        let bossHp = 400 + (state.stage * 130);
-        let bossAtk = 20 + (state.stage * 3);
+        const bossHp = 400 + (state.stage * 130);
+        const bossAtk = 20 + (state.stage * 3);
         const bossImg = createDynamicAvatar(bossInfo.bg, bossInfo.icon, bossInfo.border);
 
         state.enemyBoard[0] = {
@@ -1064,14 +1073,14 @@ function generateEnemies() {
 
         for (let i = 1; i < enemyCount; i++) {
             const randomBase = availableEnemies[Math.floor(Math.random() * availableEnemies.length)];
-            let enemyUnit = createUnitInstance(randomBase.id, enemySync);
+            const enemyUnit = createUnitInstance(randomBase.id, enemySync);
             enemyUnit.faction = '적 인격';
             state.enemyBoard[i] = enemyUnit;
         }
     } else {
         for (let i = 0; i < enemyCount; i++) {
             const randomBase = availableEnemies[Math.floor(Math.random() * availableEnemies.length)];
-            let enemyUnit = createUnitInstance(randomBase.id, enemySync);
+            const enemyUnit = createUnitInstance(randomBase.id, enemySync);
             enemyUnit.faction = '적 인격';
             state.enemyBoard[i] = enemyUnit;
         }
@@ -1082,9 +1091,7 @@ function hasEgo(id) {
     return state.equippedEgo.some(e => e.id === id);
 }
 
-// ⚔️ 순차 합 진행 전투 루프 (1번 슬롯부터 순서대로 1대1 진행)
 async function startBattle() {
-    initAudio();
     const deployed = state.playerBoard.filter(u => u !== null).length;
     if (deployed === 0) {
         alert("전장에 배치된 인원이 없습니다!");
@@ -1122,25 +1129,24 @@ async function startBattle() {
             updateBoard();
         }
 
-        // 🎯 1대1 순차 합 진행
         for (let i = 0; i < 6; i++) {
             pAlive = state.playerBoard.findIndex(u => u && u.currentHp > 0);
             eAlive = state.enemyBoard.findIndex(u => u && u.currentHp > 0);
             if (pAlive === -1 || eAlive === -1) break;
 
-            let p = state.playerBoard[i];
+            const p = state.playerBoard[i];
             if (!p || p.currentHp <= 0) continue;
 
-            let targetIdx = (state.enemyBoard[i] && state.enemyBoard[i].currentHp > 0) 
+            const targetIdx = (state.enemyBoard[i] && state.enemyBoard[i].currentHp > 0) 
                 ? i 
                 : state.enemyBoard.findIndex(x => x && x.currentHp > 0);
 
             if (targetIdx === -1) break;
-            let e = state.enemyBoard[targetIdx];
+            const e = state.enemyBoard[targetIdx];
 
             setClashHighlight(i, targetIdx, true);
 
-            let log = executeSingleClash(p, e);
+            const log = executeSingleClash(p, e);
             if (log) {
                 showGlobalEffect(log);
             }
@@ -1158,24 +1164,18 @@ function setClashHighlight(playerSlotIdx, enemySlotIdx, active) {
     const pSlot = document.getElementById(`board-slot-${playerSlotIdx}`);
     const eSlot = document.getElementById(`enemy-slot-${enemySlotIdx}`);
 
-    if (active) {
-        if (pSlot) pSlot.classList.add('clashing-slot');
-        if (eSlot) eSlot.classList.add('clashing-slot');
-    } else {
-        if (pSlot) pSlot.classList.remove('clashing-slot');
-        if (eSlot) eSlot.classList.remove('clashing-slot');
-    }
+    if (pSlot) pSlot.classList.toggle('clashing-slot', active);
+    if (eSlot) eSlot.classList.toggle('clashing-slot', active);
 }
 
-// 💥 동기화 단계(sync)의 합 승리 가중치 대폭 강화 로직
 function calculateClashPower(unit, isPlayer) {
-    let syncBonus = (unit.sync - 1) * 2; // 동기화 1당 위력 +2
+    const syncBonus = (unit.sync - 1) * 2;
     let basePower = 4 + Math.floor((unit.cost || 2) * 0.5) + syncBonus;
     
-    let coinCount = unit.isBoss ? 3 : (unit.cost >= 4 ? 3 : 2);
-    let coinValue = 3 + Math.floor((unit.cost || 2) * 0.5) + (unit.sync * 2); // 동기화당 코인값 +2
+    const coinCount = unit.isBoss ? 3 : (unit.cost >= 4 ? 3 : 2);
+    const coinValue = 3 + Math.floor((unit.cost || 2) * 0.5) + (unit.sync * 2);
 
-    let isEgo = unit.currentSin >= unit.maxSin;
+    const isEgo = unit.currentSin >= unit.maxSin;
     if (isEgo) basePower += 6;
 
     if (isPlayer && hasEgo('nebulizer')) basePower += 2;
@@ -1187,7 +1187,7 @@ function calculateClashPower(unit, isPlayer) {
         }
     }
 
-    let totalPower = basePower + (headsCount * coinValue);
+    const totalPower = basePower + (headsCount * coinValue);
     return { basePower, coinCount, headsCount, totalPower, isEgo };
 }
 
@@ -1196,11 +1196,11 @@ function executeSingleClash(p, e) {
 
     playAudioFile('coin', 0.8);
 
-    let pClash = calculateClashPower(p, true);
-    let eClash = calculateClashPower(e, false);
+    const pClash = calculateClashPower(p, true);
+    const eClash = calculateClashPower(e, false);
 
-    let pRoll = pClash.totalPower;
-    let eRoll = eClash.totalPower;
+    const pRoll = pClash.totalPower;
+    const eRoll = eClash.totalPower;
 
     let logMsg = "";
 
@@ -1214,7 +1214,7 @@ function executeSingleClash(p, e) {
         let pDmg = pClash.isEgo ? p.egoDmg : p.atk;
         if (pClash.isEgo && hasEgo('origami')) pDmg *= 1.3;
         
-        let finalDmg = Math.floor(pDmg * (1 + (pClash.headsCount * 0.1)));
+        const finalDmg = Math.floor(pDmg * (1 + (pClash.headsCount * 0.1)));
         e.currentHp -= finalDmg;
 
         if (pClash.isEgo) p.currentSin = 0; else p.currentSin += 25;
@@ -1223,11 +1223,11 @@ function executeSingleClash(p, e) {
             p.currentHp = Math.min(p.hp, p.currentHp + (p.hp * 0.12));
         }
 
-        let tag = pClash.isEgo ? "E.G.O 승리!" : `합 승리 (${pClash.headsCount}/${pClash.coinCount})`;
+        const tag = pClash.isEgo ? "E.G.O 승리!" : `합 승리 (${pClash.headsCount}/${pClash.coinCount})`;
         logMsg = `🗡️ [${tag}] ${p.name}(${pRoll}) ➡️ ${e.name}(${eRoll}) | ${finalDmg} DMG`;
 
         if (e.isBoss && e.currentHp > 0) {
-            let counterDmg = Math.floor(e.atk * 0.35);
+            const counterDmg = Math.floor(e.atk * 0.35);
             p.currentHp -= counterDmg;
             logMsg += ` | ⚠️ [반격] ${counterDmg} DMG`;
         }
@@ -1239,13 +1239,13 @@ function executeSingleClash(p, e) {
             playAudioFile('hit', 0.8);
         }
 
-        let eDmg = eClash.isEgo ? e.egoDmg : e.atk;
-        let finalDmg = Math.floor(eDmg * (1 + (eClash.headsCount * 0.1)));
+        const eDmg = eClash.isEgo ? e.egoDmg : e.atk;
+        const finalDmg = Math.floor(eDmg * (1 + (eClash.headsCount * 0.1)));
         p.currentHp -= finalDmg;
 
         if (eClash.isEgo) e.currentSin = 0; else e.currentSin += 25;
 
-        let tag = eClash.isEgo ? "적 E.G.O 패배" : `합 패배 (${eClash.headsCount}/${eClash.coinCount})`;
+        const tag = eClash.isEgo ? "적 E.G.O 패배" : `합 패배 (${eClash.headsCount}/${eClash.coinCount})`;
         logMsg = `🛡️ [${tag}] ${p.name}(${pRoll}) ⬅️ ${e.name}(${eRoll}) | ${finalDmg} DMG 받음`;
 
     } else {
@@ -1266,9 +1266,9 @@ function endBattle(isWin) {
     document.querySelectorAll('.clashing-slot').forEach(el => el.classList.remove('clashing-slot'));
 
     if (isWin) {
-        let baseGold = 10 + (state.stage - 1) * 3;
-        let interest = Math.min(5, Math.floor(state.gold / 10));
-        let income = baseGold + interest;
+        const baseGold = 10 + (state.stage - 1) * 3;
+        const interest = Math.min(5, Math.floor(state.gold / 10));
+        const income = baseGold + interest;
         
         state.gold += income;
         showGlobalEffect(`스테이지 ${state.stage} 클리어! +${income}G`);
@@ -1278,7 +1278,7 @@ function endBattle(isWin) {
             setTimeout(showEgoModal, 1000);
         }
     } else {
-        let damage = 10 + (state.stage * 2);
+        const damage = 10 + (state.stage * 2);
         state.playerHp -= damage;
         showGlobalEffect(`전투 패배... HP -${damage}`);
         
@@ -1290,7 +1290,7 @@ function endBattle(isWin) {
             return;
         }
         
-        let interest = Math.min(5, Math.floor(state.gold / 10));
+        const interest = Math.min(5, Math.floor(state.gold / 10));
         state.gold += 3 + interest;
     }
 
@@ -1312,14 +1312,14 @@ function endBattle(isWin) {
 function showEgoModal() {
     const modal = document.getElementById('ego-modal-overlay');
     const container = document.getElementById('ego-choices');
-    container.innerHTML = '';
 
-    let available = EGO_GIFTS_DB.filter(e => !hasEgo(e.id));
+    const available = EGO_GIFTS_DB.filter(e => !hasEgo(e.id));
     available.sort(() => 0.5 - Math.random());
-    let choices = available.slice(0, 3);
+    const choices = available.slice(0, 3);
 
+    let html = '';
     choices.forEach(ego => {
-        container.innerHTML += `
+        html += `
             <div class="ego-choice-card" onclick="selectEgo('${ego.id}')">
                 <div style="font-size:24px;">${ego.icon}</div>
                 <div style="color:var(--accent-gold); font-weight:bold; font-size:12px;">${ego.name}</div>
@@ -1328,11 +1328,11 @@ function showEgoModal() {
         `;
     });
 
+    container.innerHTML = html;
     modal.style.display = 'flex';
 }
 
 function selectEgo(id) {
-    initAudio();
     const ego = EGO_GIFTS_DB.find(e => e.id === id);
     if (ego) {
         state.equippedEgo.push(ego);
